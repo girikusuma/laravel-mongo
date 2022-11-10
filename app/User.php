@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App;
 
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
@@ -31,4 +31,17 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    protected $connection = 'mongodb';
+	protected $collection = 'user';
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+
+    protected $fillable = [
+        'username', 'password'
+    ];
 }

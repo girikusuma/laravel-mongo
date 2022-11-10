@@ -9,14 +9,14 @@ class Kendaraan extends Eloquent
 	protected $connection = 'mongodb';
 	protected $collection = 'kendaraan';
 
+    public $timestamps = false;
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
 
-    protected $fillable = [
-        'tahun_keluaran', 'harga', 'warna'
-    ];
+    protected $guarded = [];
 
 }
