@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Kendaraan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class KendaraanController extends Controller
 {
@@ -32,26 +33,31 @@ class KendaraanController extends Controller
             'tahun_keluaran' => 'required',
             'harga' => 'required|numeric',
             'warna' => 'required',
-            'motor_id' => 'required_without:mobil_id',
-            'mobil_id' => 'required_without:motor_id',
+            'motor' => 'array|min:1',
+            'mobil' => 'array|min:1',
         ]);
 
+        $kendaraan = $request->all();
+
+        if($request->has('motor') && $request->has('mobil')) {
+            return response()->json(data:["error" => "Find motor and mobil in payload request"], status:201);
+        }
+        
         if(!$validator->fails()) {
-            $data = [
-                'tahun_keluaran' => $request->tahun_keluaran,
-                'harga' => $request->harga,
-                'warna' => $request->warna,
-            ];
-    
-            if($request->has('motor_id')) {
-                $data['motor_id'] = $request->motor_id;
-            } else if($request->has('mobil_id')) {
-                $data['mobil_id'] = $request->mobil_id;
+            if($request->has('motor')) {
+                for($i = 0; $i < count($kendaraan['motor']); $i++) {
+                    $kendaraan['motor'][$i]['uuid'] = Str::uuid()->getHex()->toString();
+                }
             }
-    
-            $kendaraan = Kendaraan::create($data);
-    
-            return response()->json(data:$kendaraan, status:201);
+            if($request->has('mobil')) {
+                for($i = 0; $i < count($kendaraan['mobil']); $i++) {
+                    $kendaraan['mobil'][$i]['uuid'] = Str::uuid()->getHex()->toString();
+                }
+            }
+
+            $created = Kendaraan::create($kendaraan);
+
+            return response()->json(data:$created, status:201);
         } else {
             return response()->json(data:["error" => $validator->errors()], status:201);
         }
@@ -65,18 +71,7 @@ class KendaraanController extends Controller
      */
     public function show(Kendaraan $kendaraan)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Kendaraan  $kendaraan
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Kendaraan $kendaraan)
-    {
-        //
+        return response()->json(data:$kendaraan, status:200);
     }
 
     /**
@@ -88,7 +83,38 @@ class KendaraanController extends Controller
      */
     public function update(Request $request, Kendaraan $kendaraan)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'tahun_keluaran' => 'required',
+            'harga' => 'required|numeric',
+            'warna' => 'required',
+            'motor' => 'array|min:1',
+            'mobil' => 'array|min:1',
+        ]);
+
+        $payload = $request->all();
+
+        if($request->has('motor') && $request->has('mobil')) {
+            return response()->json(data:["error" => "Find motor and mobil in payload request"], status:201);
+        }
+        
+        if(!$validator->fails()) {
+            if($request->has('motor')) {
+                for($i = 0; $i < count($payload['motor']); $i++) {
+                    $payload['motor'][$i]['uuid'] = Str::uuid()->getHex()->toString();
+                }
+            }
+            if($request->has('mobil')) {
+                for($i = 0; $i < count($payload['mobil']); $i++) {
+                    $payload['mobil'][$i]['uuid'] = Str::uuid()->getHex()->toString();
+                }
+            }
+
+            $updated = $kendaraan->update($payload);
+
+            return response()->json(data:$updated, status:200);
+        } else {
+            return response()->json(data:["error" => $validator->errors()], status:201);
+        }
     }
 
     /**
@@ -99,6 +125,8 @@ class KendaraanController extends Controller
      */
     public function destroy(Kendaraan $kendaraan)
     {
-        //
+        $kendaraan->delete();
+
+        return response()->json(data:[], status:204);
     }
 }
